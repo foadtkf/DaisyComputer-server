@@ -22,7 +22,16 @@ async function run() {
     await client.connect();
     const productCollection = client.db("daisy-computer").collection("tools");
     console.log("Connected");    
-
+    app.get("/productssix", async (req, res) => {
+      const query = {};
+      const cursor = productCollection.find(query);
+      
+      let products;
+        products = await cursor.toArray();
+        products =products.slice(0,6)
+      res.send(products);
+    //   console.log(products)
+    });
 
     app.get("/products", async (req, res) => {
       console.log("query", req.query);
