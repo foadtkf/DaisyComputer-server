@@ -20,39 +20,48 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    const productCollection = client.db("daisy-computer").collection("tools");
-    console.log("Connected");    
+    const toolsCollection = client.db("daisy-computer").collection("tools");
+    const reviewCollection = client.db("daisy-computer").collection("reviews");
+    console.log("Connected");
     app.get("/productssix", async (req, res) => {
       const query = {};
-      const cursor = productCollection.find(query);
-      
+      const cursor = toolsCollection.find(query);
+
       let products;
-        products = await cursor.toArray();
-        products =products.slice(0,6)
+      products = await cursor.toArray();
+      if (products.length < 6) products = products.slice(0, 3);
+      else products = products.slice(0, 6);
       res.send(products);
-    //   console.log(products)
+      //   console.log(products)
     });
 
     app.get("/products", async (req, res) => {
       console.log("query", req.query);
       const query = {};
-      const cursor = productCollection.find(query);
+      const cursor = toolsCollection.find(query);
       let products;
-        products = await cursor.toArray();
+      products = await cursor.toArray();
       res.send(products);
       // console.log(products)
     });
-    
-
 
     
+    app.get("/reviews", async (req, res) => {
+        console.log("query", req.query);
+        const query = {};
+        const cursor = reviewCollection.find(query);
+        let products;
+        products = await cursor.toArray();
+        res.send(products);
+        // console.log(products)
+      });
   } finally {
   }
 }
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("laptopdokan server is running");
+  res.send("manufacturer server is running");
 });
 app.listen(port, () => {
   console.log("it is running on ", port);
