@@ -49,6 +49,12 @@ async function run() {
       const result = await  toolsCollection.insertOne(newTool);
       res.send(result);
     });
+    app.delete("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await toolsCollection.deleteOne(query);
+      res.send(result);
+    });
     // Reviews
     app.get("/reviews", async (req, res) => {
         console.log("query", req.query);
@@ -61,7 +67,7 @@ async function run() {
       });
       app.post("/reviews", async (req, res) => {
         const newTool = req.body;
-        const result = await  toolsCollection.insertOne(newTool);
+        const result = await  reviewCollection.insertOne(newTool);
         res.send(result);
       });
   } finally {
