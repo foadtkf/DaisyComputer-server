@@ -23,6 +23,7 @@ async function run() {
     const toolsCollection = client.db("daisy-computer").collection("tools");
     const reviewCollection = client.db("daisy-computer").collection("reviews");
     console.log("Connected");
+    // tools
     app.get("/productssix", async (req, res) => {
       const query = {};
       const cursor = toolsCollection.find(query);
@@ -34,7 +35,6 @@ async function run() {
       res.send(products);
       //   console.log(products)
     });
-
     app.get("/products", async (req, res) => {
       console.log("query", req.query);
       const query = {};
@@ -44,13 +44,12 @@ async function run() {
       res.send(products);
       // console.log(products)
     });
-
     app.post("/products", async (req, res) => {
       const newTool = req.body;
       const result = await  toolsCollection.insertOne(newTool);
       res.send(result);
     });
-    
+    // Reviews
     app.get("/reviews", async (req, res) => {
         console.log("query", req.query);
         const query = {};
@@ -59,6 +58,11 @@ async function run() {
         products = await cursor.toArray();
         res.send(products);
         // console.log(products)
+      });
+      app.post("/reviews", async (req, res) => {
+        const newTool = req.body;
+        const result = await  toolsCollection.insertOne(newTool);
+        res.send(result);
       });
   } finally {
   }
