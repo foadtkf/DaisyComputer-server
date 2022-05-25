@@ -45,6 +45,11 @@ async function run() {
       // console.log(products)
     });
 
+    app.post("/products", async (req, res) => {
+      const newTool = req.body;
+      const result = await  toolsCollection.insertOne(newTool);
+      res.send(result);
+    });
     
     app.get("/reviews", async (req, res) => {
         console.log("query", req.query);
