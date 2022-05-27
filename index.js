@@ -41,6 +41,8 @@ async function run() {
     const toolsCollection = client.db("daisy-computer").collection("tools");
     const reviewCollection = client.db("daisy-computer").collection("reviews");
     const userCollection = client.db('daisy-computer').collection('users');
+    const bookingCollection = client.db("daisy-computer").collection("booking")
+    const paymentCollection = client.db("daisy-computer").collection("payments")
     console.log("Connected");
     // tools
 
@@ -48,6 +50,7 @@ async function run() {
       const requester = req.decoded.email;
       const requesterAccount = await userCollection.findOne({ email: requester });
       if (requesterAccount.role === 'admin') {
+        console.log('admin')
         next();
       }
       else {
@@ -85,6 +88,22 @@ async function run() {
       const result = await toolsCollection.deleteOne(query);
       res.send(result);
     });
+    app.get('/products/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: ObjectId(id) }
+      const product = await toolsCollection.findOne(query)
+      res.send(product)
+  })
+  app.put('/products/:id', async (req, res) => {
+    const id = req.params.id
+    const quantity = req.body.newQuantity
+    const filter = { _id: ObjectId(id) }
+    const updateDoc = {
+        $set: { quantity: quantity },
+    };
+    const product = await toolsCollection.updateOne(filter, updateDoc)
+    res.send(product)
+})
     // Reviews
     app.get("/reviews", async (req, res) => {
         console.log("query", req.query);
@@ -137,6 +156,66 @@ async function run() {
       const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
       res.send({ result, token });
     });
+
+    app.get('/booking', verifyJWT, async (req, res) => {
+      const result = await bookingCollection.find().toArray();
+      res.send(result)
+  })
+  app.post('/booking', verifyJWT, async (req, res) => {
+      const booking = req.body;
+      const result = await bookingCollection.insertOne(booking);
+      res.send(result)
+  })
+
+  app.get('/booking/:id', verifyJWT, async (req, res) => {
+      const id = req.params.id
+      const query = { _id: ObjectId(id) }
+      const booking = await bookingCollection.findOne(query)
+      res.send(booking)
+  })
+  app.delete('/booking/:id', verifyJWT, async (req, res) => {
+      const id = req.params.id
+      const filter = { _id: ObjectId(id) }
+      const booking = await bookingCollection.deleteOne(filter)
+      res.send(booking)
+  })
+  app.get('/booking',verifyJWT, async (req, res) => {
+      const user = req.query.email;
+      const decodedEmail = req.decoded.email
+      if (user === decodedEmail) {
+          const query = { user: user }
+          const bookings = await bookingCollection.find(query).toArray()
+          res.send(bookings)
+      }
+      else {
+          return res.status(403).send({ message: "Forbidden access" })
+      }
+  })
+  app.patch('/booking/:id', verifyJWT, async (req, res) => {
+      const id = req.params.id
+      const payment = req.body
+      const filter = { _id: ObjectId(id) }
+      const updateDoc = {
+          $set: {
+              status: 'paid',
+              transactionId: payment.transactionId
+          },
+      };
+      const result = await paymentCollection.insertOne(payment)
+      const updatedBooking = await bookingCollection.updateOne(filter, updateDoc)
+      res.send(updateDoc)
+  })
+  app.put('/booking/:id', verifyJWT, async (req, res) => {
+      const id = req.params.id
+      const filter = { _id: ObjectId(id) }
+      const updateDoc = {
+          $set: {
+              status:'ship'
+          },
+      };
+      const updatedBooking = await bookingCollection.updateOne(filter, updateDoc)
+      res.send(updateDoc)
+  })
   } finally {
   }
 }
