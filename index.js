@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors');
 require('dotenv').config()
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const app = express()
 const port = process.env.PORT || 5000
 const jwt = require('jsonwebtoken');
@@ -57,6 +58,7 @@ async function run() {
         res.status(403).send({ message: 'forbidden' });
       }
     }
+    // Products
     app.get("/productssix", async (req, res) => {
       const query = {};
       const cursor = toolsCollection.find(query);
@@ -117,26 +119,23 @@ async function run() {
           res.send(result)
       }
   });
-      app.post("/reviews", async (req, res) => {
+      app.post("/reviews", verifyJWT, async (req, res) => {
         const newTool = req.body;
         const result = await  reviewCollection.insertOne(newTool);
         res.send(result);
       });
-
       // user
-      
     app.get('/user', verifyJWT, async (req, res) => {
       const users = await userCollection.find().toArray();
       res.send(users);
     });
-
+// admin
     app.get('/admin/:email', async (req, res) => {
       const email = req.params.email;
       const user = await userCollection.findOne({ email: email });
       const isAdmin = user.role === 'admin';
       res.send({ admin: isAdmin })
     })
-
     app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
       const email = req.params.email;
       const filter = { email: email };
@@ -219,6 +218,18 @@ async function run() {
       const updatedBooking = await bookingCollection.updateOne(filter, updateDoc)
       res.send(updateDoc)
   })
+  //PAYMENT
+  app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+    const product = req.body;
+    const price = product.price;
+    const amount = price * 100;
+    const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+    });
+    res.send({ clientSecret: paymentIntent.client_secret })
+});
   } finally {
   }
 }
