@@ -42,7 +42,6 @@ async function run() {
     const paymentCollection = client
       .db("daisy-computer")
       .collection("payments");
-    console.log("Connected");
     // verify admin
     const verifyAdmin = async (req, res, next) => {
       const requester = req.decoded.email;
@@ -50,7 +49,6 @@ async function run() {
         email: requester,
       });
       if (requesterAccount.role === "admin") {
-        console.log("admin");
         next();
       } else {
         res.status(403).send({ message: "forbidden" });
@@ -66,16 +64,13 @@ async function run() {
       if (products.length < 6) products = products.slice(0, 3);
       else products = products.slice(0, 6);
       res.send(products);
-      //   console.log(products)
     });
     app.get("/products", async (req, res) => {
-      console.log("query", req.query);
       const query = {};
       const cursor = toolsCollection.find(query);
       let products;
       products = await cursor.toArray();
       res.send(products);
-      // console.log(products)
     });
     app.post("/products", async (req, res) => {
       const newTool = req.body;
