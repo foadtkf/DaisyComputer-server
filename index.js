@@ -54,7 +54,7 @@ async function run() {
         res.status(403).send({ message: "forbidden" });
       }
     };
-    // Products
+    // Products 
     app.get("/productssix", async (req, res) => {
       const query = {};
       const cursor = toolsCollection.find(query);
